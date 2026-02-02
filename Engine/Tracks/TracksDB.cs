@@ -1,4 +1,4 @@
-﻿using JacRed.Engine.CORE;
+using JacRed.Engine.CORE;
 using JacRed.Models.Details;
 using JacRed.Models.Tracks;
 using MonoTorrent;
@@ -31,7 +31,7 @@ namespace JacRed.Engine
 
                         try
                         {
-                            var res = JsonConvert.DeserializeObject<ffprobemodel>(File.ReadAllText(file));
+                            var res = JsonConvert.DeserializeObject<FfprobeModel>(File.ReadAllText(file));
                             if (res?.streams != null && res.streams.Count > 0)
                                 Database.TryAdd(infohash, res);
                         }
@@ -43,7 +43,7 @@ namespace JacRed.Engine
 
         static Random random = new Random();
 
-        static ConcurrentDictionary<string, ffprobemodel> Database = new ConcurrentDictionary<string, ffprobemodel>();
+        static ConcurrentDictionary<string, FfprobeModel> Database = new ConcurrentDictionary<string, FfprobeModel>();
 
         static string pathDb(string infohash, bool createfolder = false)
         {
@@ -72,7 +72,7 @@ namespace JacRed.Engine
                 return null;
 
             string infohash = MagnetLink.Parse(magnet).InfoHashes.V1OrV2.ToHex();
-            if (Database.TryGetValue(infohash, out ffprobemodel res))
+            if (Database.TryGetValue(infohash, out FfprobeModel res))
                 return res.streams;
 
             string path = pathDb(infohash);
@@ -81,7 +81,7 @@ namespace JacRed.Engine
 
             try
             {
-                res = JsonConvert.DeserializeObject<ffprobemodel>(File.ReadAllText(path));
+                res = JsonConvert.DeserializeObject<FfprobeModel>(File.ReadAllText(path));
                 if (res?.streams == null || res.streams.Count == 0)
                     return null;
             }
@@ -104,7 +104,7 @@ namespace JacRed.Engine
             if (string.IsNullOrEmpty(infohash))
                 return;
 
-            ffprobemodel res = null;
+            FfprobeModel res = null;
             string tsuri = AppInit.conf.tsuri[random.Next(0, AppInit.conf.tsuri.Length)];
 
             #region ffprobe
@@ -128,7 +128,7 @@ namespace JacRed.Engine
                     await process.WaitForExitAsync(token);
 
                     string outPut = await process.StandardOutput.ReadToEndAsync();
-                    res = JsonConvert.DeserializeObject<ffprobemodel>(outPut);
+                    res = JsonConvert.DeserializeObject<FfprobeModel>(outPut);
                 }
             }
             catch { }
