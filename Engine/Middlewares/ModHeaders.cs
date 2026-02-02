@@ -56,17 +56,20 @@ namespace JacRed.Engine.Middlewares
             {
                 // External: restrict /cron/, /jsondb, /dev/ to local only
                 if (httpContext.Request.Path.Value.StartsWith("/cron/") || httpContext.Request.Path.Value.StartsWith("/jsondb") || httpContext.Request.Path.Value.StartsWith("/dev/"))
-                    return Task.CompletedTask;
+                    return;
 
                 // External: require API key when configured
                 if (!string.IsNullOrEmpty(AppInit.conf.apikey))
                 {
                     if (httpContext.Request.Path.Value == "/" || Regex.IsMatch(httpContext.Request.Path.Value, "^/(api/v1\\.0/conf|stats/|sync/)"))
-                        return _next(httpContext);
+                    {
+                        await _next(httpContext);
+                        return;
+                    }
 
                     var match = Regex.Match(httpContext.Request.QueryString.Value ?? "", "(\\?|&)apikey=([^&]+)");
                     if (!match.Success || AppInit.conf.apikey != match.Groups[2].Value)
-                        return Task.CompletedTask;
+                        return;
                 }
             }
 
